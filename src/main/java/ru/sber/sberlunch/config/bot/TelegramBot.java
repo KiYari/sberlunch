@@ -6,11 +6,16 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.sber.sberlunch.config.TextImporter;
+
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
     private final BotConfig botConfig;
+    private final TextImporter textImporter;
+    private final  Random random = new Random();
 
     @Override
     public String getBotUsername() {
@@ -37,15 +42,15 @@ public class TelegramBot extends TelegramLongPollingBot {
                     String message = "здарова";
                     sendMessage(chatId, message);
 
-        }
+            }
         }
     }
 
     private void startCommandReceived(Long chatId, String name) {
-        String answer = "Hi, " + name + ", nice to meet you!" + "\n" +
-                "Enter the currency whose official exchange rate" + "\n" +
-                "you want to know in relation to BYN." + "\n" +
-                "For example: USD";
+        String answer = "Привет, " + name + "!" + "\n" +
+                "Напиши своё настоящее имя + фамилию, чтобы я знал кто ты" + "\n" +
+                "Имей в виду, что имя будет проверяться!" + "\n"
+                + textImporter.getLines().get(random.nextInt(0, 100));
         sendMessage(chatId, answer);
     }
 
