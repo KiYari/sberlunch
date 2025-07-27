@@ -1,21 +1,20 @@
 package ru.sber.sberlunch.config.bot;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.sber.sberlunch.config.TextImporter;
-
-import java.util.Random;
+import ru.sber.sberlunch.service.BotService;
+import ru.sber.sberlunch.util.events.StartMessageEvent;
 
 @Component
 @RequiredArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
     private final BotConfig botConfig;
-    private final TextImporter textImporter;
-    private final  Random random = new Random();
+    private final ApplicationEventPublisher publisher;
 
     @Override
     public String getBotUsername() {
@@ -31,11 +30,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();
+            Long chatId = update.getMessage().getChatId();
 
             switch (messageText){
                 case "/start":
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                    publisher.publishEvent(new StartMessageEvent(this, chatId, update.getMessage().getChat().getUserName()));
                     break;
 
                 default:
@@ -46,15 +45,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void startCommandReceived(Long chatId, String name) {
-        String answer = "Привет, " + name + "!" + "\n" +
-                "Напиши своё настоящее имя + фамилию, чтобы я знал кто ты" + "\n" +
-                "Имей в виду, что имя будет проверяться!" + "\n"
-                + textImporter.getLines().get(random.nextInt(0, 100));
-        sendMessage(chatId, answer);
-    }
-
-    private void sendMessage(Long chatId, String textToSend){
+    public void sendMessage(Long chatId, String textToSend){
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);
