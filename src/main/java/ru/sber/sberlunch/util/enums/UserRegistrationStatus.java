@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserStatus {
+public enum UserRegistrationStatus {
     PENDING("PENDING"),
     REVIEWING("REVIEWING"),
     ACTIVE("ACTIVE");

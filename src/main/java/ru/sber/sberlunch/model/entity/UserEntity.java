@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.sber.sberlunch.util.enums.Role;
-import ru.sber.sberlunch.util.enums.UserStatus;
+import ru.sber.sberlunch.util.enums.UserActivityStatus;
+import ru.sber.sberlunch.util.enums.UserRegistrationStatus;
 
 import java.time.LocalDateTime;
 
@@ -37,9 +38,13 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Setter
-    private UserStatus status = UserStatus.PENDING;
+    private UserRegistrationStatus registrationStatus = UserRegistrationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Setter
+    private UserActivityStatus activityStatus;
 
     public static UserEntity getDefaultUserEntity() {
-        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserStatus.PENDING);
+        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE);
     }
 }

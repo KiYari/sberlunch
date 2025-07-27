@@ -8,7 +8,9 @@ import ru.sber.sberlunch.config.TextImporter;
 import ru.sber.sberlunch.config.bot.TelegramBot;
 import ru.sber.sberlunch.model.entity.UserEntity;
 import ru.sber.sberlunch.repository.UserRepository;
-import ru.sber.sberlunch.util.enums.UserStatus;
+import ru.sber.sberlunch.util.enums.UserActivityStatus;
+import ru.sber.sberlunch.util.enums.UserRegistrationStatus;
+import ru.sber.sberlunch.util.events.ProposePlaceEvent;
 import ru.sber.sberlunch.util.events.StartMessageEvent;
 import ru.sber.sberlunch.util.events.TelegramMessageEvent;
 
@@ -25,6 +27,46 @@ public class BotService {
     private final TelegramBot telegramBot;
 
     @EventListener
+    public void defaultMessageReceived(TelegramMessageEvent event) {
+        Optional<UserEntity> optional = userRepository.findById(event.getChatId());
+        Message message = event.getUpdate().getMessage();
+
+        if (optional.isPresent()) {
+            UserEntity user = optional.get();
+            switch (user.getRegistrationStatus()) {
+                case PENDING -> {
+                    String realName = message.getText().substring(0, Math.min(message.getText().length(), 64));
+                    user.setRealName(realName);
+                    user.setRegistrationStatus(UserRegistrationStatus.REVIEWING);
+
+                    telegramBot.sendMessage(event.getChatId(), "Отлично!\n" +
+                            "Пока я не проверю твоё имя тебя будут звать: " + realName);
+                }
+
+                default -> telegramBot.sendMessage(event.getChatId(), "ну потом поговорим короче, сейчас некогда, жена рожает, давай гуляй");
+
+            }
+
+            if (user.getRegistrationStatus().equals(UserRegistrationStatus.ACTIVE)) {
+                switch (user.getActivityStatus()){
+                    case PROPOSING -> {
+                        //TODO: на этом моменте нужно вводить сущность группы и приписывать чувака к группе, нужно подумать как ограничить количество выбора для человека места до 1
+                        telegramBot.sendMessage(event.getChatId(), "Пока похуй думаю как сделать");
+                    }
+                }
+            }
+
+            if (user.getUsername().equals(message.getChat().getUserName())) {
+                user.setUsername(message.getChat().getUserName());
+            }
+            userRepository.save(user);
+
+        } else {
+            startCommandReceived(new StartMessageEvent(this, message.getChatId(), message.getChat().getUserName()));
+        }
+    }
+
+    @EventListener
     public void startCommandReceived(StartMessageEvent event) {
         UserEntity entity = UserEntity.getDefaultUserEntity();
         entity.setUsername(event.getUsername());
@@ -39,25 +81,18 @@ public class BotService {
     }
 
     @EventListener
-    public void defaultMessageReceived(TelegramMessageEvent event) {
+    public void userPlaseProposingCommandReceived(ProposePlaceEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
-        Message message = event.getUpdate().getMessage();
 
         if (optional.isPresent()) {
             UserEntity user = optional.get();
-            if (user.getStatus().equals(UserStatus.PENDING)) { //TODO: продумать, нужно откидывать отдельный ивент под это  - ?
-                String realName = message.getText().substring(0, Math.min(message.getText().length(), 64));
-                user.setRealName(realName);
-                user.setStatus(UserStatus.REVIEWING);
-                telegramBot.sendMessage(event.getChatId(), "Отлично!\n" +
-                        "Пока я не проверю твоё имя тебя будут звать: " + realName);
+
+            if (user.getRegistrationStatus() == UserRegistrationStatus.ACTIVE) {
+                user.setActivityStatus(UserActivityStatus.PROPOSING);
+                telegramBot.sendMessage(event.getChatId(), "В следующем сообщении напиши куда хочешь сходить");
+            } else {
+                telegramBot.sendMessage(event.getChatId(), "Молодой еще, жди пока тебя согласуют ");
             }
-            if (user.getUsername().equals(message.getChat().getUserName())) {
-                user.setUsername(message.getChat().getUserName());
-            }
-            userRepository.save(user);
-        } else {
-            startCommandReceived(new StartMessageEvent(this, message.getChatId(), message.getChat().getUserName()));
         }
     }
 }

@@ -7,7 +7,8 @@ CREATE TABLE users (
     real_name VARCHAR(64),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     role INT,
-    STATUS VARCHAR(16)
+    registration_status VARCHAR(16),
+    activity_status VARCHAR(16)
 );
 
 CREATE TABLE roles (
