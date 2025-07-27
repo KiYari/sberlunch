@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sber.sberlunch.service.BotService;
 import ru.sber.sberlunch.util.events.StartMessageEvent;
+import ru.sber.sberlunch.util.events.TelegramMessageEvent;
 
 @Component
 @RequiredArgsConstructor
@@ -38,9 +39,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
 
                 default:
-                    String message = "здарова";
-                    sendMessage(chatId, message);
-
+                    publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
             }
         }
     }

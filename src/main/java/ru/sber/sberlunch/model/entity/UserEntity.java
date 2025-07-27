@@ -36,6 +36,7 @@ public class UserEntity {
     private RoleEntity role = RoleEntity.of(Role.USER);
 
     @Enumerated(EnumType.STRING)
+    @Setter
     private UserStatus status = UserStatus.PENDING;
 
     public static UserEntity getDefaultUserEntity() {
