@@ -49,6 +49,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                 case "Предложить место для обеда":
                     publisher.publishEvent(new ProposePlaceEvent(this, chatId, update.getMessage()));
+                    break;
 
                 default:
                     publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
