@@ -22,7 +22,7 @@ import java.util.Random;
 public class BotService {
     private final TextImporter textImporter;
     private final Random random = new Random();
-//    private final UserService userService; - под вопросом нужно ли
+    //    private final UserService userService; - под вопросом нужно ли
     private final UserRepository userRepository;
     private final TelegramBot telegramBot;
 
@@ -43,13 +43,19 @@ public class BotService {
                             "Пока я не проверю твоё имя тебя будут звать: " + realName);
                 }
 
-                default -> telegramBot.sendMessage(event.getChatId(), "ну потом поговорим короче, сейчас некогда, жена рожает, давай гуляй");
+                default -> {
+                    if (user.getActivityStatus().equals(UserActivityStatus.STABLE)) {
+                        telegramBot.sendMessage(event.getChatId(), "ну потом поговорим короче, сейчас некогда, жена рожает, давай гуляй");
+                    }
+                }
 
             }
 
             if (user.getRegistrationStatus().equals(UserRegistrationStatus.ACTIVE)) {
                 switch (user.getActivityStatus()){
                     case PROPOSING -> {
+                        user.setPlaceProposed(message.getText());
+                        user.setActivityStatus(UserActivityStatus.STABLE);
                         //TODO: на этом моменте нужно вводить сущность группы и приписывать чувака к группе, нужно подумать как ограничить количество выбора для человека места до 1
                         telegramBot.sendMessage(event.getChatId(), "Пока похуй думаю как сделать");
                     }
@@ -89,6 +95,7 @@ public class BotService {
 
             if (user.getRegistrationStatus() == UserRegistrationStatus.ACTIVE) {
                 user.setActivityStatus(UserActivityStatus.PROPOSING);
+                userRepository.save(user);
                 telegramBot.sendMessage(event.getChatId(), "В следующем сообщении напиши куда хочешь сходить");
             } else {
                 telegramBot.sendMessage(event.getChatId(), "Молодой еще, жди пока тебя согласуют ");

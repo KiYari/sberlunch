@@ -44,7 +44,16 @@ public class UserEntity {
     @Setter
     private UserActivityStatus activityStatus;
 
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team teamId;
+
+    @Column
+    @Setter
+    private String placeProposed;
+
     public static UserEntity getDefaultUserEntity() {
-        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE);
+        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, null, "");
     }
 }
