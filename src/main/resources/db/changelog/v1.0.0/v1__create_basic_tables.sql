@@ -9,8 +9,9 @@ CREATE TABLE users (
     role INT,
     registration_status VARCHAR(16),
     activity_status VARCHAR(16),
-    team_id BIGINT,
-    place_proposed VARCHAR(64)
+    team_id INT,
+    place_proposed VARCHAR(255),
+    room_id BIGINT
 );
 
 CREATE TABLE roles (
@@ -18,9 +19,15 @@ CREATE TABLE roles (
     role_name VARCHAR(16)
 );
 
-CREATE TABLE teams (
-    ID SERIAL PRIMARY KEY
-)
+CREATE TABLE rooms (
+    ID SERIAL PRIMARY KEY,
+    admin_id BIGINT,
+    team_amount INT
+);
 
 INSERT INTO roles (ID, role_name)
 VALUES (1, 'USER'), (2, 'ADMIN');
+
+-- changeset Kim Arthur:2
+INSERT INTO rooms(ID, admin_id, team_amount)
+VALUES (1, null, 2)

@@ -7,15 +7,11 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.sber.sberlunch.service.BotService;
-import ru.sber.sberlunch.util.events.ProposePlaceEvent;
-import ru.sber.sberlunch.util.events.StartMessageEvent;
-import ru.sber.sberlunch.util.events.TelegramMessageEvent;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.sber.sberlunch.util.events.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +37,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         if(update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
+            String callbackData = null;
+            if(update.hasCallbackQuery()) {
+                callbackData = update.getCallbackQuery().getData();
+            }
 
             switch (messageText){
                 case "/start":
@@ -51,9 +51,21 @@ public class TelegramBot extends TelegramLongPollingBot {
                     publisher.publishEvent(new ProposePlaceEvent(this, chatId, update.getMessage()));
                     break;
 
+                case "Посмотреть сопартийцев":
+                    publisher.publishEvent(new GetTeamEvent(this, chatId));
+                    break;
+
+
                 default:
                     publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
             }
+
+            if (callbackData != null) {
+                if (callbackData.equals("time_clicked")) {
+                    publisher.publishEvent(new TimeProposeEvent(this, chatId, update.getMessage().getChat().getUserName()));
+                }
+            }
+
         }
     }
 
@@ -62,6 +74,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText(textToSend);
         sendMessage.setReplyMarkup(createMainMenuKeyboard());
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+
+        }
+    }
+
+    public void sendMessage(Long chatId, String textToSend, InlineKeyboardMarkup  markup){
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(String.valueOf(chatId));
+        sendMessage.setText(textToSend);
+        sendMessage.setReplyMarkup(createMainMenuKeyboard());
+        sendMessage.setReplyMarkup(markup);
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -79,6 +104,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         KeyboardRow row1 = new KeyboardRow();
         row1.add(new KeyboardButton("Предложить место для обеда"));
+        row1.add(new KeyboardButton("Посмотреть сопартийцев"));
 
         keyboard.add(row1);
 

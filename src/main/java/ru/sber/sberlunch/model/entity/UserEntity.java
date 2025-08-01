@@ -1,6 +1,7 @@
 package ru.sber.sberlunch.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,15 +46,19 @@ public class UserEntity {
     private UserActivityStatus activityStatus;
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id")
-    private Team teamId;
-
     @Column
+    private Integer teamId;
+
+    @Column(length = 255)
     @Setter
     private String placeProposed;
 
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     public static UserEntity getDefaultUserEntity() {
-        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, null, "");
+        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, 0, "", null);
     }
 }
