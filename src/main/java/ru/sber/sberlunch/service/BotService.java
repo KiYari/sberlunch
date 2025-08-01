@@ -13,10 +13,7 @@ import ru.sber.sberlunch.model.entity.UserEntity;
 import ru.sber.sberlunch.repository.UserRepository;
 import ru.sber.sberlunch.util.enums.UserActivityStatus;
 import ru.sber.sberlunch.util.enums.UserRegistrationStatus;
-import ru.sber.sberlunch.util.events.GetTeamEvent;
-import ru.sber.sberlunch.util.events.ProposePlaceEvent;
-import ru.sber.sberlunch.util.events.StartMessageEvent;
-import ru.sber.sberlunch.util.events.TelegramMessageEvent;
+import ru.sber.sberlunch.util.events.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,11 +61,10 @@ public class BotService { //TODO: Говно полное, надо подума
                         }
                         user.setPlaceProposed(message.getText());
                         telegramBot.sendMessage(event.getChatId(), "Теперь твое выбранное место: " + message.getText(), placeProposedMarkup());
-                        break;
                     }
 
                     default -> {
-                        break;
+
                     }
                 }
             }
@@ -121,7 +117,7 @@ public class BotService { //TODO: Говно полное, надо подума
     }
 
     @EventListener
-    public void timeProposingCommandReceived(ProposePlaceEvent event) {
+    public void timeProposingCommandReceived(TimeProposeEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
 
         if (optional.isPresent()) {

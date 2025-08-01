@@ -34,38 +34,36 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if(update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            // Обработка обычных сообщений
             String messageText = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
-            String callbackData = null;
-            if(update.hasCallbackQuery()) {
-                callbackData = update.getCallbackQuery().getData();
-            }
 
-            switch (messageText){
+            switch (messageText) {
                 case "/start":
                     publisher.publishEvent(new StartMessageEvent(this, chatId, update.getMessage().getChat().getUserName()));
                     break;
-
                 case "Предложить место для обеда":
                     publisher.publishEvent(new ProposePlaceEvent(this, chatId, update.getMessage()));
                     break;
-
                 case "Посмотреть сопартийцев":
                     publisher.publishEvent(new GetTeamEvent(this, chatId));
                     break;
-
-
                 default:
                     publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
             }
+        } else if (update.hasCallbackQuery()) {
+            String callbackData = update.getCallbackQuery().getData();
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
 
-            if (callbackData != null) {
-                if (callbackData.equals("time_clicked")) {
-                    publisher.publishEvent(new TimeProposeEvent(this, chatId, update.getMessage().getChat().getUserName()));
-                }
+            switch (callbackData) {
+                case "time_clicked":
+                    System.out.println("Кнопка 'Предложить время' нажата!");
+                    publisher.publishEvent(new TimeProposeEvent(this, chatId, update.getCallbackQuery().getFrom().getUserName()));
+                    break;
+                default:
+                    System.out.println("Неизвестный callbackData: " + callbackData);
             }
-
         }
     }
 
