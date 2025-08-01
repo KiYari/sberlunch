@@ -10,6 +10,7 @@ import ru.sber.sberlunch.config.TextImporter;
 import ru.sber.sberlunch.config.bot.TelegramBot;
 import ru.sber.sberlunch.model.entity.Room;
 import ru.sber.sberlunch.model.entity.UserEntity;
+import ru.sber.sberlunch.repository.RoomRepository;
 import ru.sber.sberlunch.repository.UserRepository;
 import ru.sber.sberlunch.util.enums.UserActivityStatus;
 import ru.sber.sberlunch.util.enums.UserRegistrationStatus;
@@ -26,6 +27,7 @@ public class BotService { //TODO: Говно полное, надо подума
     //    private final UserService userService; - под вопросом нужно ли
     private final UserRepository userRepository;
     private final TelegramBot telegramBot;
+    private final RoomRepository roomRepository;
 
     @EventListener
     public void defaultMessageReceived(TelegramMessageEvent event) {
@@ -61,6 +63,19 @@ public class BotService { //TODO: Говно полное, надо подума
                         }
                         user.setPlaceProposed(message.getText());
                         telegramBot.sendMessage(event.getChatId(), "Теперь твое выбранное место: " + message.getText(), placeProposedMarkup());
+                    }
+
+                    case ACCEPTING -> {
+                        Optional<UserEntity> opt = userRepository.findByUsername(message.getText());
+                        if (opt.isPresent()) {
+                            UserEntity userToAdd = opt.get();
+                            userToAdd.setRoom(user.getRoom());
+
+                            userRepository.save(userToAdd);
+                            telegramBot.sendMessage(event.getChatId(), "Отлично! Вы добавили " + userToAdd.getRealName() + "в комнату!");
+                        } else {
+                            telegramBot.sendMessage(event.getChatId(), "Нет такого чела в боте. Либо попроси его написать сообщение, чтобы обновился ТГ юзернейм");
+                        }
                     }
 
                     default -> {

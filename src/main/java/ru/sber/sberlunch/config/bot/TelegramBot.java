@@ -12,6 +12,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sber.sberlunch.util.events.*;
+import ru.sber.sberlunch.util.events.admin.AddUserToRoomEvent;
+import ru.sber.sberlunch.util.events.admin.AdminEvent;
+import ru.sber.sberlunch.util.events.admin.RoomAdminEvent;
+import ru.sber.sberlunch.util.events.admin.ShuffleRoomEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +53,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "Посмотреть сопартийцев":
                     publisher.publishEvent(new GetTeamEvent(this, chatId));
                     break;
+                case "Админка":
+                    publisher.publishEvent(new RoomAdminEvent(this, chatId));
+                    break;
+                case "/admin":
+                    publisher.publishEvent(new AdminEvent(this, chatId));
+                    break;
                 default:
                     publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
             }
@@ -57,12 +67,20 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
 
             switch (callbackData) {
-                case "time_clicked":
+                case "time_clicked" -> {
+
                     System.out.println("Кнопка 'Предложить время' нажата!");
                     publisher.publishEvent(new TimeProposeEvent(this, chatId, update.getCallbackQuery().getFrom().getUserName()));
-                    break;
-                default:
+                }
+                case "add_user_to_room" -> {
+                    publisher.publishEvent(new AddUserToRoomEvent(this, chatId));
+                }
+                case "shuffle_room" -> {
+                    publisher.publishEvent(new ShuffleRoomEvent(this, chatId));
+                }
+                default -> {
                     System.out.println("Неизвестный callbackData: " + callbackData);
+                }
             }
         }
     }
@@ -92,7 +110,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    public ReplyKeyboardMarkup createMainMenuKeyboard() {
+    private ReplyKeyboardMarkup createMainMenuKeyboard() {
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         keyboardMarkup.setSelective(true);
         keyboardMarkup.setResizeKeyboard(true);
@@ -103,6 +121,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         KeyboardRow row1 = new KeyboardRow();
         row1.add(new KeyboardButton("Предложить место для обеда"));
         row1.add(new KeyboardButton("Посмотреть сопартийцев"));
+        row1.add(new KeyboardButton("Админка"));
 
         keyboard.add(row1);
 

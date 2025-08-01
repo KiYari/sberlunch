@@ -5,9 +5,11 @@ import ru.sber.sberlunch.model.entity.Room;
 import ru.sber.sberlunch.model.entity.UserEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findByRoom(Room room);
     List<UserEntity> findByRoomAndTeamId(Room room, Integer teamId);
+    Optional<UserEntity> findByUsername(String username);
 }
