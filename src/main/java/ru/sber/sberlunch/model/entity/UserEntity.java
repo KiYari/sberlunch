@@ -18,6 +18,22 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 public class UserEntity {
+    @Override
+    public String toString() {
+        return "UserEntity{" +
+                "room=" + room.getID() +
+                ", placeProposed='" + placeProposed + '\'' +
+                ", teamId=" + teamId +
+                ", activityStatus=" + activityStatus +
+                ", registrationStatus=" + registrationStatus +
+                ", role=" + role.getRole() +
+                ", createdAt=" + createdAt +
+                ", realName='" + realName + '\'' +
+                ", username='" + username + '\'' +
+                ", ID=" + ID +
+                '}';
+    }
+
     @Id
     @Setter
     private Long ID;
@@ -33,9 +49,8 @@ public class UserEntity {
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role")
-    private RoleEntity role = RoleEntity.of(Role.USER);
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @Enumerated(EnumType.STRING)
     @Setter
@@ -59,6 +74,6 @@ public class UserEntity {
     private Room room;
 
     public static UserEntity getDefaultUserEntity() {
-        return new UserEntity(null, "", "", LocalDateTime.now(), RoleEntity.of(Role.USER), UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, 0, "", null);
+        return new UserEntity(null, "", "", LocalDateTime.now(), Role.USER, UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, 0, "", null);
     }
 }

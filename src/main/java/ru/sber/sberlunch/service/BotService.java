@@ -3,6 +3,7 @@ package ru.sber.sberlunch.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -30,6 +31,7 @@ public class BotService { //TODO: Говно полное, надо подума
     private final RoomRepository roomRepository;
 
     @EventListener
+    @Transactional
     public void defaultMessageReceived(TelegramMessageEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
         Message message = event.getUpdate().getMessage();
@@ -65,7 +67,7 @@ public class BotService { //TODO: Говно полное, надо подума
                         telegramBot.sendMessage(event.getChatId(), "Теперь твое выбранное место: " + message.getText(), placeProposedMarkup());
                     }
 
-                    case ACCEPTING -> {
+                    case ACCEPTING_TO_ROOM -> {
                         Optional<UserEntity> opt = userRepository.findByUsername(message.getText());
                         if (opt.isPresent()) {
                             UserEntity userToAdd = opt.get();
@@ -76,6 +78,29 @@ public class BotService { //TODO: Говно полное, надо подума
                         } else {
                             telegramBot.sendMessage(event.getChatId(), "Нет такого чела в боте. Либо попроси его написать сообщение, чтобы обновился ТГ юзернейм");
                         }
+                    }
+
+                    case ADMIN_ACCEPTING_TO_SYSTEM -> {
+                        List<UserEntity> usersToUpdate = Arrays.stream(message.getText().split(","))
+                                .map(String::trim)
+                                .map(userRepository::findByUsername)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .peek(u -> u.setRegistrationStatus(UserRegistrationStatus.ACTIVE))
+                                .collect(Collectors.toList());
+
+                        if (usersToUpdate.isEmpty()) {
+                            telegramBot.sendMessage(event.getChatId(), "Никого не приняли");
+                            return;
+                        }
+                        telegramBot.sendMessage(event.getChatId(), "Приняты: " + usersToUpdate.stream().map(UserEntity::getRealName).collect(Collectors.joining(", ")));
+
+                        user.setActivityStatus(UserActivityStatus.STABLE);
+                        usersToUpdate.add(user);
+
+
+                        userRepository.saveAll(usersToUpdate);
+
                     }
 
                     default -> {
@@ -96,6 +121,7 @@ public class BotService { //TODO: Говно полное, надо подума
     }
 
     @EventListener
+    @Transactional
     public void startCommandReceived(StartMessageEvent event) {
         UserEntity entity = UserEntity.getDefaultUserEntity();
         entity.setUsername(event.getUsername());
@@ -110,6 +136,7 @@ public class BotService { //TODO: Говно полное, надо подума
     }
 
     @EventListener
+    @Transactional
     public void userPlaseProposingCommandReceived(ProposePlaceEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
 
@@ -132,6 +159,7 @@ public class BotService { //TODO: Говно полное, надо подума
     }
 
     @EventListener
+    @Transactional
     public void timeProposingCommandReceived(TimeProposeEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
 
@@ -149,6 +177,7 @@ public class BotService { //TODO: Говно полное, надо подума
     }
 
     @EventListener
+    @Transactional
     public void getTeamCommandReceived(GetTeamEvent event) {
         Optional<UserEntity> optional = userRepository.findById(event.getChatId());
         if (optional.isPresent()) {

@@ -1,4 +1,4 @@
-package ru.sber.sberlunch.util.events.admin;
+package ru.sber.sberlunch.util.events.admin.room;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

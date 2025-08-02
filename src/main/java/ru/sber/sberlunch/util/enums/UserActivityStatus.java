@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum UserActivityStatus {
     STABLE("STABLE"),
     PROPOSING("PROPOSING"),
-    ACCEPTING("ACCEPTING");
+    ACCEPTING_TO_ROOM("ACCEPTING_TO_ROOM"),
+    ADMIN_ACCEPTING_TO_SYSTEM("ADMIN_ACCEPTING_TO_SYSTEM");
 
     private final String status;
 }

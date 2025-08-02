@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -12,10 +13,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.sber.sberlunch.util.events.*;
-import ru.sber.sberlunch.util.events.admin.AddUserToRoomEvent;
+import ru.sber.sberlunch.util.events.admin.AcceptPeopleEvent;
+import ru.sber.sberlunch.util.events.admin.CheckReviewingEvent;
+import ru.sber.sberlunch.util.events.admin.room.AddUserToRoomEvent;
 import ru.sber.sberlunch.util.events.admin.AdminEvent;
-import ru.sber.sberlunch.util.events.admin.RoomAdminEvent;
-import ru.sber.sberlunch.util.events.admin.ShuffleRoomEvent;
+import ru.sber.sberlunch.util.events.admin.room.RoomAdminEvent;
+import ru.sber.sberlunch.util.events.admin.room.ShuffleRoomEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,15 +75,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                     System.out.println("Кнопка 'Предложить время' нажата!");
                     publisher.publishEvent(new TimeProposeEvent(this, chatId, update.getCallbackQuery().getFrom().getUserName()));
                 }
-                case "add_user_to_room" -> {
-                    publisher.publishEvent(new AddUserToRoomEvent(this, chatId));
-                }
-                case "shuffle_room" -> {
-                    publisher.publishEvent(new ShuffleRoomEvent(this, chatId));
-                }
-                default -> {
-                    System.out.println("Неизвестный callbackData: " + callbackData);
-                }
+                case "add_user_to_room" -> publisher.publishEvent(new AddUserToRoomEvent(this, chatId));
+                case "shuffle_room" -> publisher.publishEvent(new ShuffleRoomEvent(this, chatId));
+                case "reviewing_status_check" -> publisher.publishEvent(new CheckReviewingEvent(this, chatId));
+                case "accept_people" -> publisher.publishEvent(new AcceptPeopleEvent(this, chatId));
+                default -> System.out.println("Неизвестный callbackData: " + callbackData);
             }
         }
     }
@@ -108,6 +107,25 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
 
         }
+    }
+
+    public void updateMessage(Long chatId, Integer messageId) throws TelegramApiException {
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text("Новый текст сообщения")
+                .build();
+        execute(editMessage);
+    }
+
+    public void updateMessage(Long chatId, Integer messageId, InlineKeyboardMarkup markup) throws TelegramApiException {
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text("Новый текст сообщения")
+                .replyMarkup(markup)
+                .build();
+        execute(editMessage);
     }
 
     private ReplyKeyboardMarkup createMainMenuKeyboard() {
