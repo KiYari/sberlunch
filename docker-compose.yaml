@@ -19,7 +19,7 @@ services:
     ports:
       - '3443:3443'
     environment:
-      - DB_HOST=localhost
+      - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=sberlunch
       - DB_USER=postgres

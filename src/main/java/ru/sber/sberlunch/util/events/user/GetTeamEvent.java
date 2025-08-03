@@ -1,8 +1,7 @@
-package ru.sber.sberlunch.util.events;
+package ru.sber.sberlunch.util.events.user;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Getter
 public class GetTeamEvent extends ApplicationEvent {

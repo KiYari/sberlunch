@@ -9,6 +9,7 @@ CREATE TABLE users (
     role VARCHAR(16),
     registration_status VARCHAR(16),
     activity_status VARCHAR(255),
+    is_ready BOOLEAN,
     team_id INT,
     place_proposed VARCHAR(255),
     room_id BIGINT

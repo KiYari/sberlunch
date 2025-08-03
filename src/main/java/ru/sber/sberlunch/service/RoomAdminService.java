@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -58,7 +59,7 @@ public class RoomAdminService {
         if (opt.isPresent()) {
             UserEntity user = opt.get();
 
-            if (user.getRole().equals(RoleEntity.of(Role.ADMIN)) || user.getRoom().getAdminId().equals(shuffleRoomEvent.getChatId())) {
+            if (user.getRole().equals(Role.ADMIN) || user.getRoom().getAdminId().equals(shuffleRoomEvent.getChatId())) {
                 shuffleRoom(user.getRoom(), 6); //TODO: сделать через настройку
                 bot.sendMessage(shuffleRoomEvent.getChatId(), "Комната перемешана!");
             }
@@ -108,13 +109,13 @@ public class RoomAdminService {
 
     @Transactional
     protected void shuffleRoom(Room room, Integer teamSize) {
-        List<UserEntity> users = room.getUsers();
+        List<UserEntity> users = room.getUsers().stream().filter(UserEntity::getIsReady).collect(Collectors.toList());
 
         if (users.isEmpty()) {
             return;
         }
 
-        secureShuffle(users); //TODO: шафл с весами
+        users = secureShuffle(users); //TODO: шафл с весами
 
         int teamCount = (int) Math.ceil((double) users.size() / teamSize);
 

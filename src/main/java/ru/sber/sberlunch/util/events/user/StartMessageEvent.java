@@ -1,14 +1,14 @@
-package ru.sber.sberlunch.util.events;
+package ru.sber.sberlunch.util.events.user;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
-public class TimeProposeEvent extends ApplicationEvent {
+public class StartMessageEvent extends ApplicationEvent {
     private final String username;
     private final Long chatId;
 
-    public TimeProposeEvent(Object source, Long chatId, String username) {
+    public StartMessageEvent(Object source, Long chatId, String username) {
         super(source);
         this.username = username;
         this.chatId = chatId;

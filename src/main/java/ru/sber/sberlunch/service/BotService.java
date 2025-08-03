@@ -16,6 +16,7 @@ import ru.sber.sberlunch.repository.UserRepository;
 import ru.sber.sberlunch.util.enums.UserActivityStatus;
 import ru.sber.sberlunch.util.enums.UserRegistrationStatus;
 import ru.sber.sberlunch.util.events.*;
+import ru.sber.sberlunch.util.events.user.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class BotService { //TODO: Говно полное, надо подума
                             userToAdd.setRoom(user.getRoom());
 
                             userRepository.save(userToAdd);
-                            telegramBot.sendMessage(event.getChatId(), "Отлично! Вы добавили " + userToAdd.getRealName() + "в комнату!");
+                            telegramBot.sendMessage(event.getChatId(), "Отлично! Вы добавили " + userToAdd.getRealName() + " в комнату!");
                         } else {
                             telegramBot.sendMessage(event.getChatId(), "Нет такого чела в боте. Либо попроси его написать сообщение, чтобы обновился ТГ юзернейм");
                         }
@@ -195,11 +196,29 @@ public class BotService { //TODO: Говно полное, надо подума
                 telegramBot.sendMessage(event.getChatId(), "Твоя команда: " + userRepository.findByRoomAndTeamId(user.getRoom(),
                         user.getTeamId())
                         .stream()
+                        .filter(UserEntity::getIsReady)
                         .map(UserEntity::getRealName)
                         .collect(Collectors.joining(", ")));
 
             } else {
                 telegramBot.sendMessage(event.getChatId(), "Не согласован, проси админа добавить тебя");
+            }
+        }
+    }
+
+    @EventListener
+    @Transactional
+    public void handleChangeReadinessEvent(ChangeReadyEvent event) {
+        Optional<UserEntity> optional = userRepository.findById(event.getChatId());
+        if (optional.isPresent()) {
+            UserEntity user = optional.get();
+
+            if (user.getRegistrationStatus() == UserRegistrationStatus.ACTIVE) {
+                user.setIsReady(!user.getIsReady());
+                userRepository.save(user);
+                telegramBot.sendMessage(event.getChatId(), "Готовность идти на обед выставлена на: " + user.getIsReady());
+            } else {
+                telegramBot.sendMessage(event.getChatId(), "Не согласовано");
             }
         }
     }

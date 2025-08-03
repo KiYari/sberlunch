@@ -73,7 +73,11 @@ public class UserEntity {
     @JoinColumn(name = "room_id")
     private Room room;
 
+    @Column
+    @Setter
+    private Boolean isReady = true;
+
     public static UserEntity getDefaultUserEntity() {
-        return new UserEntity(null, "", "", LocalDateTime.now(), Role.USER, UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, 0, "", null);
+        return new UserEntity(null, "", "", LocalDateTime.now(), Role.USER, UserRegistrationStatus.PENDING, UserActivityStatus.STABLE, 0, "", null, true);
     }
 }

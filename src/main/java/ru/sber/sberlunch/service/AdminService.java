@@ -76,7 +76,7 @@ public class AdminService {
 
         List<InlineKeyboardButton> rowInline1 = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("Посмотреть в статусе REVIEWING");
+        button1.setText("Посмотреть в статусе REVIEWING");//TODO: Чет полное говно была затея, лучше просто сразу принимать, там разграничение по комнатам все ранво есть
         button1.setCallbackData("reviewing_status_check");
         rowInline1.add(button1);
 

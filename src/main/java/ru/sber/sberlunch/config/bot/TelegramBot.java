@@ -19,6 +19,7 @@ import ru.sber.sberlunch.util.events.admin.room.AddUserToRoomEvent;
 import ru.sber.sberlunch.util.events.admin.AdminEvent;
 import ru.sber.sberlunch.util.events.admin.room.RoomAdminEvent;
 import ru.sber.sberlunch.util.events.admin.room.ShuffleRoomEvent;
+import ru.sber.sberlunch.util.events.user.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,23 +48,13 @@ public class TelegramBot extends TelegramLongPollingBot {
             Long chatId = update.getMessage().getChatId();
 
             switch (messageText) {
-                case "/start":
-                    publisher.publishEvent(new StartMessageEvent(this, chatId, update.getMessage().getChat().getUserName()));
-                    break;
-                case "Предложить место для обеда":
-                    publisher.publishEvent(new ProposePlaceEvent(this, chatId, update.getMessage()));
-                    break;
-                case "Посмотреть сопартийцев":
-                    publisher.publishEvent(new GetTeamEvent(this, chatId));
-                    break;
-                case "Админка":
-                    publisher.publishEvent(new RoomAdminEvent(this, chatId));
-                    break;
-                case "/admin":
-                    publisher.publishEvent(new AdminEvent(this, chatId));
-                    break;
-                default:
-                    publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
+                case "/start" -> publisher.publishEvent(new StartMessageEvent(this, chatId, update.getMessage().getChat().getUserName()));
+                case "Предложить место для обеда"-> publisher.publishEvent(new ProposePlaceEvent(this, chatId, update.getMessage()));
+                case "Посмотреть сопартийцев" -> publisher.publishEvent(new GetTeamEvent(this, chatId));
+                case "Админка" -> publisher.publishEvent(new RoomAdminEvent(this, chatId));
+                case "Поменять статус готовности" -> publisher.publishEvent(new ChangeReadyEvent(this, chatId));
+                case "/admin" -> publisher.publishEvent(new AdminEvent(this, chatId));
+                default -> publisher.publishEvent(new TelegramMessageEvent(this, chatId, update));
             }
         } else if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
@@ -128,7 +119,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         execute(editMessage);
     }
 
-    private ReplyKeyboardMarkup createMainMenuKeyboard() {
+    private ReplyKeyboardMarkup createMainMenuKeyboard() { //TODO: Подумать, как персонализировать по возможности
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         keyboardMarkup.setSelective(true);
         keyboardMarkup.setResizeKeyboard(true);
@@ -137,7 +128,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<KeyboardRow> keyboard = new ArrayList<>();
 
         KeyboardRow row1 = new KeyboardRow();
-        row1.add(new KeyboardButton("Предложить место для обеда"));
+        //row1.add(new KeyboardButton("Предложить место для обеда"));
+        row1.add(new KeyboardButton("Поменять статус готовности"));
         row1.add(new KeyboardButton("Посмотреть сопартийцев"));
         row1.add(new KeyboardButton("Админка"));
 
