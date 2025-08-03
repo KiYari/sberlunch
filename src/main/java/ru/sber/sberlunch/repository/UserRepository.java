@@ -14,5 +14,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findByRoomAndTeamId(Room room, Integer teamId);
     Optional<UserEntity> findByUsername(String username);
     List<UserEntity> findAllByRoomAndRegistrationStatus(Room room, UserRegistrationStatus registrationStatus);
+    List<UserEntity> findAllByRegistrationStatus(UserRegistrationStatus registrationStatus);
     Boolean existsByUsername(String username);
 }

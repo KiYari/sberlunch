@@ -52,7 +52,7 @@ public class AdminService {
             UserEntity user = opt.get();
 
             if (user.getRole().equals(Role.ADMIN)) {
-                String users = userRepository.findAllByRoomAndRegistrationStatus(user.getRoom(), UserRegistrationStatus.REVIEWING)
+                String users = userRepository.findAllByRegistrationStatus(UserRegistrationStatus.REVIEWING)
                         .stream()
                         .map(UserEntity::getUsername)
                         .collect(Collectors.joining(", "))
